@@ -1,0 +1,157 @@
+@extends('layouts.master')
+@section('title')
+    البحث عن كناب
+@endsection
+
+@section('title_page')
+    <table style="margin: 10px 0;">
+        <tr>
+            <td>البحث عن كتاب</td>
+            @if (!Session::get('addBook'))
+                <td><a href="{{ route('createOrder') }}" class="btn btn-conf ">انشاء طلب</a></td>
+            @endif
+        </tr>
+    </table>
+@endsection
+@section('style')
+    <style>
+        .tbl {
+            width: 50%;
+            margin: 30px auto;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+
+        }
+
+        table {
+            {{--  border-collapse: collapse;  --}} width: 100%;
+            text-align: center;
+        }
+
+        .top-border {
+            border-top: 1px solid rgb(148, 148, 148);
+        }
+
+        th,
+        td {
+            padding: 8px;
+        }
+
+        th {
+            font-size: larger;
+        }
+
+        td {
+            text-align: center;
+            font-size: large;
+        }
+
+        .btn {
+            display: block;
+            color: rgb(255, 255, 255);
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            text-decoration: none;
+            width: 100px;
+        }
+
+        .btn-det {
+            background-color: rgb(102, 19, 185);
+            display: block;
+            color: rgb(255, 255, 255);
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            text-decoration: none;
+            width: 100px;
+        }
+
+        .btn-conf {
+            background-color: rgb(36, 185, 19);
+        }
+
+        .btn-del {
+            background-color: rgb(185, 19, 19);
+        }
+
+        select {
+            width: 200px;
+        }
+    </style>
+@endsection
+
+@section('content')
+    <form action="{{ route('searchBook') }}" method="POST" id="form">
+        @csrf
+        <table class="table-form">
+            <tr>
+                <td>
+                    عنوان الكتاب <input type="text" name="title" id="title">
+                </td>
+                <td>
+                    لغة الكتاب <select name="lang_id" id="lang">
+                        @while ($row = oci_fetch_array($p_out_lang, OCI_ASSOC + OCI_RETURN_NULLS))
+                            @if ($row['ID'] == $lang_id)
+                                <option value="{{ $row['ID'] }}" selected>{{ $row['NAME'] }}</option>
+                            @else
+                                <option value="{{ $row['ID'] }}">{{ $row['NAME'] }}</option>
+                            @endif
+                        @endwhile
+                    </select>
+                </td>
+                <td>
+                    المؤلف <select name="auth_id" id="auth">
+                        @while ($row = oci_fetch_array($p_out_auth, OCI_ASSOC + OCI_RETURN_NULLS))
+                            @if ($row['ID'] == $auth_id)
+                                <option value="{{ $row['ID'] }}" selected>{{ $row['NAME'] }}</option>
+                            @else
+                                <option value="{{ $row['ID'] }}">{{ $row['NAME'] }}</option>
+                            @endif
+                        @endwhile
+                    </select>
+                </td>
+                <td>
+                    دار النشر <select name="publ_id" id="publ">
+                        @while ($row = oci_fetch_array($p_out_publ, OCI_ASSOC + OCI_RETURN_NULLS))
+                            {{--  <option value=""></option>  --}}
+                            @if ($row['ID'] == $publ_id)
+                                <option value="{{ $row['ID'] }}" selected>{{ $row['NAME'] }}</option>
+                            @else
+                                <option value="{{ $row['ID'] }}">{{ $row['NAME'] }}</option>
+                            @endif
+                        @endwhile
+                    </select>
+                </td>
+                <td>
+                    <input id="" type="submit" value="بحث" name="search" class="btn-det">
+                </td>
+            </tr>
+        </table>
+    </form>
+    <h2>عدد النتائج : {{ $count }}</h2>
+
+    <div class="row row-cols-1 row-cols-md-4" style="font-size: medium; ">
+        @while ($row = oci_fetch_array($p_out, OCI_ASSOC + OCI_RETURN_NULLS))
+            <div class="row g-0" style="box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); margin: 15px 35px;">
+                <div class="col-md-4">
+                    <img src="{{ asset('app-assets2/img/elements/01.png') }}" class="img-fluid rounded-start"
+                        style="height: 250px ;width: 100%" alt="...">
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h3 class="card-title" style="color:rgb(102, 19, 185)">{{ $row['TITLE'] }}</h3>
+                        <p class="card-text">المؤلف : {{ $row['AUTHERS'] }}</p>
+                        <p class="card-text">دار النشر : {{ $row['PUBLISHER'] }}</p>
+                        <p class="card-text"> السعر : {{ $row['PRICE'] }} شيكل</p>
+                        <br>
+                        @if (Session::get('addBook'))
+                            <td><a href="{{ route('insertBook', $row['ID']) }}" class="btn btn-det ">اضف
+                                    لطلب
+                                </a></td>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        @endwhile
+    </div>
+@endsection
